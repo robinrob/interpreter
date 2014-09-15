@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
+require(process.env.JS_LIB_HOME + '/log')
+
 
 function parse(code) {
     // index used to keep track of where in code we are
-    var token, index, symbol_table = {}
-
+    var token, symbol_table = {}
 
     var proto_token = {
         led: function () {
@@ -32,7 +33,7 @@ function parse(code) {
                 s.lbp = bp
             }
         } else {
-            s = Object.create(token)
+            s = Object.create(proto_token)
             s.id = s.value = id
             s.lbp = bp
             symbol_table[id] = s
@@ -50,7 +51,7 @@ function parse(code) {
     symbol("}")
     symbol("else")
     // used to represent end of program
-    symbol("(end)")
+    symbol("END")
     // used to represent any kind of word
     symbol("(word)")
 
@@ -135,6 +136,13 @@ function parse(code) {
     prefix("typeof")
 
 
+    function word(id) {
+        var s = Object.create(proto_token)
+        s.id = s.value = id
+        return s
+    }
+
+
     function block() {
         advance("{")
         var a = statements()
@@ -144,8 +152,8 @@ function parse(code) {
 
 
     function statements() {
-        var a = [], s
-        while (token.id !== "}" && token.id !== "(end)") {
+        var a = []
+        while (token.id !== "}" && token.id !== "END") {
             a.push(statement())
         }
         return a
@@ -153,12 +161,64 @@ function parse(code) {
 
 
     function statement() {
-        // Read statement
+        return advance(";")
     }
 
 
-    function advance() {
-        token = "something"
+    function copy(prototype) {
+        var copy = {}
+        for (var i in prototype) {
+            copy[i] = prototype[i]
+        }
+        return copy
+    }
+
+
+//    function advance(to_token) {
+//        var tkn, index, next_char
+//
+//        if (to_token) {
+//            tkn = word("")
+//            while (tkn.id !== to_token) {
+////                log("tkn.id: " + tkn.id)
+////                log("to_token: " + to_token)
+//                tkn = advance()
+//            }
+//        }
+//        else {
+//            index = 0
+//            tkn = word(code.substr(index++, 1))
+//            next_char = code.substr(index, 1)
+//
+//            while (!symbol_table[tkn.id] && !symbol_table[next_char] && index < code.length) {
+//                tkn = word(tkn.id + code.substr(index++, 1))
+//                next_char = code.substr(index, 1)
+//            }
+//        }
+//        if (symbol_table[tkn.id]) {
+//            tkn = symbol_table[tkn.id]
+////            log("tkn.id: " + tkn.id)
+//        }
+//        else {
+////            logo(tkn)
+//        }
+//        token = tkn
+//        code = code.substr(index)
+//        return tkn
+//    }
+
+
+    function advance(to_char) {
+        var index = 0, str = "", this_char = code.substr(index++, 1)
+
+        while (this_char !== to_char && index < code.length) {
+            str += this_char
+            this_char = code.substr(index++)
+        }
+
+        code = code.substr(index)
+
+        return str
     }
 
 
@@ -194,7 +254,30 @@ function parse(code) {
         }
         return left
     }
+
+
+//    logo(symbol_table)
+
+
+//    var js = ""
+
+//    advance()
+//    while (token.value !== "END") {
+//        js += token.value
+//        advance()
+//    }
+//    return js
+    function js(statements) {
+        js = ""
+        for (var i in statements) {
+            js += statements[i].value
+        }
+        return js
+    }
+
+    return js(statements())
 }
 
 
-parse('robin')
+
+log(parse('if;else;END'))
