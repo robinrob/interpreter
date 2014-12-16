@@ -1,3 +1,3 @@
 [submodule "rake"]
 	path = rake
-	url = git@bitbucket.org:robinrob/rakefile.git
+	url = git@github.com:robinrob/rakefile.git
